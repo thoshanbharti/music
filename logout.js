@@ -1,43 +1,19 @@
-// const logoutButton = document.getElementById('logoutButton');
+const express = require('express');
+const router = express.Router();
 
-// logoutButton.addEventListener('click', async () => {
-//     try {
-//         const response = await fetch('/logout', {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' }
-//         });
+// Logout Route
+router.post('/logout', (req, res) => {
+    if (!req.session) {
+        return res.status(400).json({ message: 'No active session found' });
+    }
 
-//         const result = await response.json();
-
-//         if (result.redirectUrl) {
-//             alert(result.message); 
-//             window.location.href = result.redirectUrl; // Redirect to login page
-//         } else {
-//             alert('Failed to logout. Please try again.');
-//         }
-//     } catch (error) {
-//         console.error('Logout error:', error);
-//         alert('An error occurred. Please try again.');
-//     }
-// });
-
-    document.getElementById('logoutButton').addEventListener('click', async () => {
-        try {
-            const response = await fetch('/logout', {
-                method: 'GET',
-                credentials: 'same-origin'
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                alert(result.message);
-                window.location.href = '/login';  // Redirect to login page after logout
-            } else {
-                alert('Logout failed. Please try again.');
-            }
-        } catch (error) {
-            console.error('Logout Error:', error);
-            alert('An error occurred during logout.');
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).json({ message: 'Logout failed' });
         }
+        res.clearCookie('token'); // Clear JWT token
+        res.status(200).json({ message: 'Logged out successfully', redirectUrl: '/login' });
     });
+});
 
+module.exports = router;

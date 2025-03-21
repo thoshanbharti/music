@@ -1,105 +1,62 @@
-// User management
-const registerUserForm = document.getElementById('register-user-form');
-const usernameInput = document.getElementById('username');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const userList = document.getElementById('users');
+const express = require('express');
+const router = express.Router();
+const User = require('../models/user'); // Assuming user model exists
+const Sound = require('../models/sound'); // Assuming sound model exists
 
-// List to store registered users temporarily
-let users = [];
 
-registerUserForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const username = usernameInput.value;
-    const email = emailInput.value;
-    const password = passwordInput.value;
-
-    if (username && email && password) {
-        const user = {
-            username: username,
-            email: email,
-            password: password, // Note: In real scenarios, use password hashing
-        };
-
-        users.push(user);
-        renderUsers();
-        registerUserForm.reset();
+router.get('/', (req, res) => {
+    res.render('admin');  // Ensure 'login.ejs' is inside your `/views` folder
+});
+// Admin Dashboard - Overview Route
+router.post('/', async (req, res) => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const totalSounds = await Sound.countDocuments();
+        res.render('admin', { totalUsers, totalSounds });
+    } catch (error) {
+        res.status(500).json({ message: 'Error loading admin dashboard.' });
     }
 });
 
-function renderUsers() {
-    userList.innerHTML = '';
-    users.forEach((user) => {
-        const li = document.createElement('li');
-        li.textContent = `${user.username} - ${user.email}`;
-        
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => deleteUser(user);
-        
-        li.appendChild(deleteBtn);
-        userList.appendChild(li);
-    });
-}
-
-function deleteUser(user) {
-    users = users.filter(u => u !== user);
-    renderUsers();
-}
-//script for admin page 
-
-// Sound management
-const addSoundForm = document.getElementById('add-sound-form');
-const soundTitleInput = document.getElementById('sound-title');
-const soundFileInput = document.getElementById('sound-file');
-const soundList = document.getElementById('sound-list');
-
-// List to store sounds temporarily
-let sounds = [];
-
-addSoundForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const soundTitle = soundTitleInput.value;
-    const soundFile = soundFileInput.value;
-
-    if (soundTitle && soundFile) {
-        const sound = {
-            title: soundTitle,
-            file: soundFile,
-        };
-
-        sounds.push(sound);
-        renderSounds();
-        addSoundForm.reset();
+// Manage Users Route
+router.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.render('manageUsers', { users });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching users.' });
     }
 });
 
-function renderSounds() {
-    soundList.innerHTML = '';
-    sounds.forEach((sound, index) => {
-        const li = document.createElement('li');
-        li.textContent = `${sound.title} - `;
-        
-        const playLink = document.createElement('a');
-        playLink.href = sound.file;
-        playLink.textContent = 'Play Sound';
-        playLink.target = '_blank';
+router.post('/delete-user/:id', async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.redirect('/admin/users');
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting user.' });
+    }
+});
 
-        li.appendChild(playLink);
-        
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => deleteSound(index);
-        
-        li.appendChild(deleteBtn);
-        soundList.appendChild(li);
-    });
-}
+// Add Sound Route
+router.post('/add-sound', async (req, res) => {
+    const { title, fileUrl } = req.body;
+    try {
+        const newSound = new Sound({ title, fileUrl });
+        await newSound.save();
+        res.redirect('/admin');
+    } catch (error) {
+        res.status(500).json({ message: 'Error adding sound.' });
+    }
+});
 
-function deleteSound(index) {
-    sounds.splice(index, 1);
-    renderSounds();
-}
+// Display Sounds
+router.get('/sounds', async (req, res) => {
+    try {
+        const sounds = await Sound.find();
+        res.render('manageSounds', { sounds });
+    } catch (error) {
+        res.status(500).json({ message: 'Error loading sounds.' });
+    }
+});
 
+module.exports = router;
