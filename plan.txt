@@ -1,0 +1,30 @@
+### Plan:
+
+1. **Update `views/login.html`**:
+   - Change the title from "LOGIN PAGE" to "SIGNUP PAGE."
+   - Update the header from "Sign up" to "Login."
+   - Change the form action from `/login` to `/signup`.
+   - Update the button text from "Register" to "Login."
+   - Remove the confirm password field, keeping only the email and password fields.
+
+2. **Update `views/signup.ejs`**:
+   - Change the title from "Healing Playlist" to "LOGIN PAGE."
+   - Update the header from "Signup" to "Login."
+   - Modify the JavaScript fetch request to point to `/login` instead of `/signup/register`.
+   - Update the button text from "Sign Up" to "Login."
+
+3. **Modify `routes/auth.js`**:
+   - Ensure that the logic for handling login and sign-up routes is correctly swapped to reflect the changes.
+
+4. **Update `login.js`**:
+   - Adjust the logic to handle the sign-up form submission instead of the login form.
+
+5. **Update `signup.js`**:
+   - Adjust the logic to handle the login form submission instead of the sign-up form.
+
+6. **Modify `routes/sign.js`**:
+   - Ensure that the route handling for sign-up is updated to handle login functionality.
+
+### Follow-up Steps:
+- Verify the changes in the files.
+- Test the login and sign-up functionalities to ensure they work as expected.
